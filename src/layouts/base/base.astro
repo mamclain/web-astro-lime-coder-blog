@@ -1,0 +1,56 @@
+---
+import HTML from "../../components/basic/html.astro";
+import BaseClient from "./base.tsx";
+import "./base.css";
+
+const { title, url, description } = Astro.props;
+---
+
+<HTML title={title} url={url} description={description}>
+<div class="h-dvh grid md:grid-cols-[18rem_1fr]">
+<!-- Sidebar -->
+    <aside class="hidden md:flex sticky top-0 h-dvh flex-col gap-6 border-r border-white/5 p-2">
+        <div class="flex justify-center items-center">
+            <a href="/" class="block">
+                <img src="/images/logo.png" alt="Lime Coder Logo" class="h-40 w-20" />
+            </a>
+        </div>
+
+        <form action="/search" class="space-y-2">
+            <input
+                    name="q"
+                    type="search"
+                    placeholder="Search"
+                    class="w-full rounded-xl bg-black/40 border border-white/10 px-3 py-2"
+            />
+        </form>
+
+        <nav class="space-y-1">
+            <a href="/" class="block px-3 py-2 rounded-lg hover:bg-white/5">Home</a>
+            <a href="/about" class="block px-3 py-2 rounded-lg hover:bg-white/5">About</a>
+        </nav>
+
+        <div class="mt-auto text-xs text-[var(--color-ink-muted)]">
+            © {new Date().getFullYear()} Lime Coder
+        </div>
+    </aside>
+
+    <main id="app-main" class="relative min-h-0 h-dvh overflow-y-auto">
+        <div id="transition-target" class="fade-grow-in min-h-0">
+            <slot />
+        </div>
+
+        <!-- Loader covers ONLY the main column -->
+        <div id="nav-loader" class="loader">
+            <div class="loader-image">
+                <img src="/images/loaders/loader_1.png" alt="" class="gray" />
+                <img src="/images/loaders/loader_1.png" alt="" class="color" />
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- Mount client behavior -->
+<BaseClient client:load />
+</HTML>

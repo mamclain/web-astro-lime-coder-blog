@@ -1,8 +1,9 @@
 ---
-import Base from "../layouts/base.astro";
+import Base from "../layouts/base/base.astro";
 import Hero from "../components/hero/hero.astro";
 import PostGrid from "../components/post_grid/post_grid.astro";
 import { getCollection } from "astro:content";
+import {permalinkFromSlug} from "../lib/permalinks";
 
 let  posts = await getCollection("blog");
 posts = [
@@ -24,15 +25,15 @@ const rt = ({body}: { body: any }) => {
     return Math.max(1, Math.round((body.split(/\s+/).length || 0) / 200));
 };
 
+
 const items = posts.map((p) => ({
-    href: `/blog/${p.slug}/`,
+    href: permalinkFromSlug(p.slug),
     title: p.data.title,
     excerpt: p.data.excerpt,
     date: p.data.date,
     image: p.data.image,
     tags: p.data.tags ?? [],
-    minutes: rt({body: p.body}),
-    // optional watermark – use a faint motif per post, or reuse a default:
+    minutes: rt({ body: p.body }),
     watermarkSrc: "/images/posts/lime_snake.png",
 }));
 

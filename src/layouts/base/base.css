@@ -1,0 +1,66 @@
+:root {
+    --loader-size: 200px;
+    --reveal-ms: 1200ms;
+}
+
+/* Base (hidden by default) */
+#nav-loader.loader {
+    /* was: position:absolute; inset:0; */
+    position: sticky;   /* stick to main's scrollport */
+    top: 0;
+    height: 100%;       /* match the visible area of <main> */
+    width: 100%;
+
+    display: grid;
+    place-items: center;
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    z-index: 999;       /* above main content */
+    transition: opacity 150ms ease;
+}
+
+/* Show it when navigating */
+html.loader-show #nav-loader {
+    opacity: 1;
+    visibility: visible;
+}
+
+.loader-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+/* Stacked images: grayscale base + colored overlay clipped from bottom */
+.loader-image {
+    position: relative;
+    width:50%; /* Fixed width */
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.loader-image img {
+    display: block;
+    width: 100%;        /* fill the container's --loader-size */
+    height: auto;
+}
+.loader-image img.gray { filter: grayscale(100%); }
+.loader-image img.color {
+    position: absolute;
+    inset: 0;
+    clip-path: inset(100% 0 0 0);
+}
+
+/* Animate bottom -> top reveal when .animating is applied */
+#nav-loader.animating .loader-image img.color {
+    animation: revealColor var(--reveal-ms) ease-out forwards;
+}
+
+@keyframes revealColor {
+    from { clip-path: inset(100% 0 0 0); }
+    to   { clip-path: inset(0 0 0 0); }
+}
