@@ -15,6 +15,20 @@
     --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular;
 }
 
+.hero-media {
+    background-repeat: no-repeat;
+    background-position: center 34%;
+    object-position: center 30%;
+}
+
+@media (min-width: 2096px) {
+    .hero-media {
+        background-position: center calc(26% - ((100vw - 2095px) * 0.015));
+        object-position: center calc(26% - ((100vw - 2095px) * 0.015));
+    }
+}
+
+
 /* Extras */
 .prose :is(h1,h2,h3) { font-family: var(--font-display); }
 .card {

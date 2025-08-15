@@ -1,93 +1,20 @@
 ---
 import Base from "../layouts/base.astro";
 import PostCard from "../components/post_card.astro";
+import Hero from "../components/hero/hero.astro";
+import {getCollection} from "astro:content";
 
-
+const posts = await getCollection("blog");
 // Demo content (swap for Content Collections)
-const posts = [
-    {
-        href: "/posts/haproxy-custom-load",
-        title: "HAProxy Custom Load Management",
-        excerpt: "Per-user pool with strict caps behind HAProxy.",
-        date: "2025-02-23",
-        image: "/images/posts/lime_snake.png",
-        tags: ["infra", "haproxy"],
-    },
-    {
-        href: "/posts/jekyll-blog-creation",
-        title: "Jekyll Blog Creation",
-        excerpt: "Getting the blog up and running.",
-        date: "2025-01-22",
-        image: "/images/posts/lime_snake.png",
-        tags: ["build"],
-    },
-    {
-        href: "/posts/ai-video",
-        title: "AI Video Creation",
-        excerpt: "Experiments with AI tools to enhance videos.",
-        date: "2025-01-19",
-        image: "/images/posts/lime_snake.png",
-        tags: ["ai", "workflow"],
-    },
-    {
-        href: "/posts/elevenlabs-review",
-        title: "Elevenlabs Audio Native Tool Review",
-        excerpt: "Voice cloning & narration for posts.",
-        date: "2025-01-18",
-        image: "/images/posts/lime_snake.png",
-        tags: ["audio"],
-    },
-];
+
 const url = "https://limecoder.com";
 const description = "Lime Coder is a personal blog dedicated to programming and other artistic interests.";
 ---
 
 
 <Base title="Lime Coder" url={url} description={description}>
+    <Hero />
 
-    <div class="-mx-4 sm:-mx-8">
-        <section
-                id="hero"
-                class="relative w-full overflow-hidden h-40 sm:h-48 md:h-56
-           bg-[url('/images/header/lime_angel_header.png')] bg-cover bg-center"
-        ></section>
-
-        <script>
-            const hero = document.getElementById("hero");
-            const video = document.createElement("video");
-            video.src = "/movie/header/lime_angel_header.mp4";
-            video.muted = true;            // must be muted for autoplay without user gesture
-            video.playsInline = true;      // iOS-friendly
-            video.preload = "auto";
-            video.className = "absolute inset-0 w-full h-full object-cover";
-
-            const delayMs = 25000; // 1s between plays
-
-            // Append immediately so browser starts fetching it
-            hero.innerHTML = "";
-            hero.appendChild(video);
-
-            video.addEventListener("canplay", () => {
-                console.log("Video can play, starting loop...");
-                playWithDelay();
-            }, { once: true });
-
-            function playWithDelay() {
-                video.currentTime = 0;
-                video.play()
-                    .then(() => {
-                        console.log("Video started");
-                    })
-                    .catch(err => {
-                        console.error("Video play failed:", err);
-                    });
-
-                video.onended = () => {
-                    setTimeout(playWithDelay, delayMs);
-                };
-            }
-        </script>
-    </div>
         <!--<section-->
         <!--        class="relative w-full overflow-hidden-->
         <!--   h-40 sm:h-48 md:h-56-->
@@ -105,7 +32,13 @@ const description = "Lime Coder is a personal blog dedicated to programming and 
         <!--    &lt;!&ndash;</div>&ndash;&gt;-->
         <!--</section>-->
 
+
     <section class="mt-8 grid gap-6">
-        {posts.map((p) => <PostCard {...p} />)}
+        {posts.map(({ slug, data }) => (
+                <PostCard
+                        href={`/blog/${slug}/`}
+                        {...data}
+                />
+        ))}
     </section>
 </Base>
