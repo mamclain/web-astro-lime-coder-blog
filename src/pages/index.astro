@@ -1,44 +1,63 @@
 ---
 import Base from "../layouts/base.astro";
-import PostCard from "../components/post_card.astro";
 import Hero from "../components/hero/hero.astro";
-import {getCollection} from "astro:content";
+import PostGrid from "../components/post_grid/post_grid.astro";
+import { getCollection } from "astro:content";
 
-const posts = await getCollection("blog");
-// Demo content (swap for Content Collections)
+let  posts = await getCollection("blog");
+posts = [
+    ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts,
+    ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts,
+    ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts,
+    ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts,
+    ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts,
+    ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts,
+    ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts,
+    ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts,
+];
+
+// sort newest first
+posts.sort((a,b) => +b.data.date - +a.data.date);
+
+// reading time helper (≈200 wpm)
+const rt = ({body}: { body: any }) => {
+    return Math.max(1, Math.round((body.split(/\s+/).length || 0) / 200));
+};
+
+const items = posts.map((p) => ({
+    href: `/blog/${p.slug}/`,
+    title: p.data.title,
+    excerpt: p.data.excerpt,
+    date: p.data.date,
+    image: p.data.image,
+    tags: p.data.tags ?? [],
+    minutes: rt({body: p.body}),
+    // optional watermark – use a faint motif per post, or reuse a default:
+    watermarkSrc: "/images/posts/lime_snake.png",
+}));
 
 const url = "https://limecoder.com";
 const description = "Lime Coder is a personal blog dedicated to programming and other artistic interests.";
 ---
 
+<Base ...>
+    <div class="flex flex-col min-h-dvh">
+        <!-- Sticky Hero -->
+        <div class="shrink-0 sticky top-0 z-40 bg-white">
+            <Hero />
+        </div>
 
-<Base title="Lime Coder" url={url} description={description}>
-    <Hero />
-
-        <!--<section-->
-        <!--        class="relative w-full overflow-hidden-->
-        <!--   h-40 sm:h-48 md:h-56-->
-        <!--   bg-[url('/images/header/lime_angel_header.png')] bg-cover "-->
-        <!--        style="background-repeat: no-repeat;"-->
-        <!--&gt;-->
-        <!--    &lt;!&ndash; gradient overlay &ndash;&gt;-->
-        <!--    <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-black/10"></div>-->
-
-        <!--    &lt;!&ndash; bottom-aligned title &ndash;&gt;-->
-        <!--    &lt;!&ndash;<div class="absolute inset-x-0 bottom-0 p-6 sm:p-1">&ndash;&gt;-->
-        <!--    &lt;!&ndash;    <h1 class="font-display text-2xl sm:text-4xl text-white max-w-4xl">&ndash;&gt;-->
-        <!--    &lt;!&ndash;        Sharp notes on RF, infra, and code.&ndash;&gt;-->
-        <!--    &lt;!&ndash;    </h1>&ndash;&gt;-->
-        <!--    &lt;!&ndash;</div>&ndash;&gt;-->
-        <!--</section>-->
-
-
-    <section class="mt-8 grid gap-6">
-        {posts.map(({ slug, data }) => (
-                <PostCard
-                        href={`/blog/${slug}/`}
-                        {...data}
-                />
-        ))}
-    </section>
+        <!-- Scrollable posts area -->
+        <div class="flex-1 overflow-y-auto px-4 sm:px-8 pb-8 pt-4"
+             style="max-height: calc(100vh - 300px);">
+            <PostGrid
+                    items={items}
+                    initialCount={12}
+                    step={8}
+                    keepMax={60}
+            />
+            <div class="h-16 sm:h-20"></div> <!-- bottom spacer -->
+        </div>
+    </div>
 </Base>
+

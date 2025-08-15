@@ -2,13 +2,20 @@
 import HeroScript from './hero.js';
 const {
     videoSrc: videoSrc = '/movie/header/lime_angel_header.mp4',
-    imageSrc: imageSrc = '/images/header/lime_angel_header.png'
+    imageSrc: imageSrc = '/images/header/lime_angel_header.png',
+    sticky = true,
 } = Astro.props;
 
 const sectionClass  = `relative w-full overflow-hidden h-40 sm:h-48 md:h-56 hero-media bg-[url(${imageSrc})] bg-cover bg-center`;
 const videoClass = `absolute inset-0 w-full h-full object-cover hero-media`;
+
+const wrapperClass = [
+    "-mx-4 sm:-mx-8",
+    sticky ? "sticky top-0 z-40 pointer-events-none" : "", // sits above posts
+].join(" ");
+
 ---
 
-<div class="-mx-4 sm:-mx-8">
+<div class={wrapperClass}>
     <HeroScript client:load videoSrc={videoSrc} sectionClass={sectionClass} videoClass={videoClass}/>
 </div>

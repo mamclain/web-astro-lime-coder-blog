@@ -1,0 +1,20 @@
+---
+import PostGridClient from "./post_grid.tsx";
+
+// Props you already build in index.astro
+const {
+    items,
+    initialCount = 12,
+    step = 8,
+    keepMax = 60, // 0 = keep everything
+} = Astro.props;
+---
+
+<!-- Solid component runs in the browser -->
+<PostGridClient
+        client:load
+        items={items}
+        initialCount={initialCount}
+        step={step}
+        keepMax={keepMax}
+/>
