@@ -1,0 +1,39 @@
+@import url("https://use.typekit.net/obu6dqf.css");
+
+@import "tailwindcss";
+
+/* Theme tokens for “Lime Noir” look */
+@theme {
+    --color-surface: #0b0f14;
+    --color-panel: color-mix(in oklab, var(--color-surface), white 6%);
+    --color-ink: #e2e8f0;
+    --color-ink-muted: #9aa4b2;
+    --color-accent: #a3e635;    /* lime */
+    --radius-2xl: 1.25rem;
+    --font-display: Sora, ui-sans-serif, system-ui;
+    --font-body: Inter, ui-sans-serif, system-ui;
+    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular;
+}
+
+/* Extras */
+.prose :is(h1,h2,h3) { font-family: var(--font-display); }
+.card {
+    @apply rounded-2xl border border-white/10 bg-[var(--color-panel)] hover:border-[var(--color-accent)]/60 transition;
+}
+.badge { @apply text-xs rounded px-2 py-1 border border-white/10 bg-white/5; }
+
+
+
+/*@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));*/
+/*@import "tailwindcss/preflight";*/
+/*@import "tailwindcss/utilities";*/
+
+/*body {*/
+/*    font-family: 'Inter', system-ui, sans-serif;*/
+/*}*/
+
+/*.font-site-serif {*/
+/*    font-family: "magistral", sans-serif;*/
+/*    font-weight: 700;*/
+/*    font-style: normal;*/
+/*}*/

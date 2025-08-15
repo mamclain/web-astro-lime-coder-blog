@@ -1,0 +1,18 @@
+---
+import '../../styles/global.css'
+import Head from './head.astro';
+import Body from './body.astro';
+const {
+    title,
+    url,
+    description
+} = Astro.props;
+---
+
+<html lang="en"  data-theme="dark">
+    <Head title={title} url={url} description={description} >
+    </Head>
+    <Body>
+        <slot />
+    </Body>
+</html>

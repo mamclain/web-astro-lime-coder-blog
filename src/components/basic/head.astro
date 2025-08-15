@@ -1,0 +1,39 @@
+---
+const {
+    title,
+    description,
+    url      = 'http://localhost:4322',
+    fav_icon = '/favicon.ico',
+    image    = '/og-image.png',
+    ms_app_tile_color = '#0b0e1a'
+} = Astro.props;
+
+const ogImage = `${url}${image}`;
+---
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>{title}</title>
+    <link rel="icon" href={fav_icon} type="image/x-icon">
+
+    <!-- Basic OG Tags -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content="{description}" />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:url" content={url} />
+
+    <!-- Twitter-compatible fallback -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <!--Microsoft Teams & Windows Integration-->
+    <meta name="msapplication-TileImage" content={image}>
+    <meta name="msapplication-TileColor" content={ms_app_tile_color}>
+
+    <slot name="head"/>
+
+</head>

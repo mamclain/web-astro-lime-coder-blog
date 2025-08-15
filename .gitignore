@@ -1,0 +1,5 @@
+﻿**/.astro
+**/.idea
+**/node_modules
+**/dist
+**/.env
