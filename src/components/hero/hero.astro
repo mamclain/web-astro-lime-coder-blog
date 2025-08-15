@@ -1,0 +1,14 @@
+---
+import HeroScript from './hero.js';
+const {
+    videoSrc: videoSrc = '/movie/header/lime_angel_header.mp4',
+    imageSrc: imageSrc = '/images/header/lime_angel_header.png'
+} = Astro.props;
+
+const sectionClass  = `relative w-full overflow-hidden h-40 sm:h-48 md:h-56 hero-media bg-[url(${imageSrc})] bg-cover bg-center`;
+const videoClass = `absolute inset-0 w-full h-full object-cover hero-media`;
+---
+
+<div class="-mx-4 sm:-mx-8">
+    <HeroScript client:load videoSrc={videoSrc} sectionClass={sectionClass} videoClass={videoClass}/>
+</div>

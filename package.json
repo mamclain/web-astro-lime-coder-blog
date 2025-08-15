@@ -16,9 +16,12 @@
     "@types/js-yaml": "^4.0.9",
     "@types/papaparse": "^5.3.16",
     "autoprefixer": "^10.4.0",
+    "image-size": "^2.0.2",
     "js-yaml": "^4.1.0",
     "papaparse": "^5.5.3",
     "postcss": "^8.5.0",
-    "tailwindcss": "^4.1.11"
+    "remark-directive": "^4.0.0",
+    "tailwindcss": "^4.1.11",
+    "unist-util-visit": "^5.0.0"
   }
 }
