@@ -46,16 +46,19 @@ async function fetchAndSwapDocument(url: string) {
     document.documentElement.replaceWith(doc.documentElement);
 }
 
-async function fetchAndSwapInner(url: string) {
+async function fetchAndSwapInner(url: string, opts: { push?: boolean } = {}) {
+    const { push = true } = opts;
     const target = document.querySelector(TARGET_SELECTOR) as HTMLElement | null;
     if (!target) { await fetchAndSwapDocument(url); return; }
 
     // animate OUT
-    target.classList.remove("fade-grow-in");
-    target.classList.add("fade-shrink-out");
-    await new Promise((r) => setTimeout(r, OUT_MS));
+    // target.classList.remove("fade-grow-in");
+    // target.classList.add("fade-shrink-out");
+    // await new Promise((r) => setTimeout(r, OUT_MS));
 
+    target.innerHTML = "";
     showOverlay();
+    await new Promise((r) => setTimeout(r, OUT_MS));
 
     const res = await fetch(url, { credentials: "same-origin" });
     const html = await res.text();
@@ -63,17 +66,18 @@ async function fetchAndSwapInner(url: string) {
     const fresh = doc.querySelector(TARGET_SELECTOR) as HTMLElement | null;
 
     // collapse again before swap
-    target.classList.remove("fade-shrink-out");
-    target.classList.add("fade-grow-in");
-    target.innerHTML = "";
+    // target.classList.remove("fade-shrink-out");
+    // target.classList.add("fade-grow-in");
+    // target.innerHTML = "";
 
-    await new Promise((r) => setTimeout(r, OUT_MS));
-    target.classList.remove("fade-grow-in");
-    target.classList.add("fade-shrink-out");
-    await new Promise((r) => setTimeout(r, OUT_MS));
+    // await new Promise((r) => setTimeout(r, OUT_MS));
+    // target.classList.remove("fade-grow-in");
+    // target.classList.add("fade-shrink-out");
+    // await new Promise((r) => setTimeout(r, OUT_MS));
 
     if (fresh) {
         target.innerHTML = fresh.innerHTML;
+        hideOverlay();
     } else {
         await fetchAndSwapDocument(url);
         hideOverlay();
@@ -81,11 +85,13 @@ async function fetchAndSwapInner(url: string) {
     }
 
     // animate IN
-    target.classList.remove("fade-shrink-out");
-    target.classList.add("fade-grow-in");
+    // target.classList.remove("fade-shrink-out");
+    // target.classList.add("fade-grow-in");
 
-    // push state
-    window.history.pushState({}, "", url);
+    // only push when we're NOT inside an intercepted nav
+    if (push) {
+        window.history.pushState({}, "", url);
+    }
 
     hideOverlay();
 }
@@ -109,10 +115,8 @@ const BaseClient = () => {
                     async handler() {
                         showOverlay();
                         try {
-                            // Use the inner swap so the overlay stays in the current DOM.
-                            // (Optional) If you want VT blur/scale on top, you can wrap this call
-                            // with startViewTransition, but DO NOT replace the entire document.
-                            await fetchAndSwapInner(to.href);
+                            // Do NOT pushState here; the navigation you intercepted will commit the URL.
+                            await fetchAndSwapInner(to.href, { push: false });
                         } finally {
                             hideOverlay();
                         }
