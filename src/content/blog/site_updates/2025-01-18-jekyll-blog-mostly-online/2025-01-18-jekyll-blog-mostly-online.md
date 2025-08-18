@@ -10,7 +10,10 @@ So after spending a few hours, I have a mostly working static Jekyll blog that l
 
 <!--more-->
 
-![Lime Book](book_of_lime.png){col-md-2 float-md-start me-3 mb-1 rounded-3}
+![Lime Book](book_of_lime.png){class="col-md-2 float-md-start me-3 mb-1 rounded-3"}
+
+pain in the butt aasdfasdf asdf asdf asdf goadsfas
+
 
 While I dabbled with [Jekyll][Jekyll] a year or so ago
 (**as I was looking at making a dedicated [midjourney][midjourney] blog at the time**),
@@ -24,6 +27,7 @@ While there were a number of static blog systems that were available back then.
 I wrote my own engine in Python that integrated into [Scrivener][Scrivener]
 and used it for a few years on my [other developer blog][mamclain] before getting tired of
 maintaining it.
+
 
 Lately I have been feeling nostalgia for the days of having a static blog, 
 and based off my prior experience with [Jekyll][Jekyll], I decided it would be a good foundation to build 

@@ -39,6 +39,7 @@ function isSafeLink(a: HTMLAnchorElement | null) {
     return true;
 }
 
+
 async function fetchAndSwapDocument(url: string) {
     const res = await fetch(url, { credentials: "same-origin" });
     const html = await res.text();
@@ -96,15 +97,17 @@ async function fetchAndSwapInner(url: string, opts: { push?: boolean } = {}) {
     hideOverlay();
 }
 
+
 const BaseClient = () => {
     onMount(() => {
-
-        const hasVT =
-            "startViewTransition" in document &&
-            (window as any).navigation &&
+        // Chrome path (Navigation API + View Transitions)
+        const supportsNavAPI =
+            typeof (window as any).navigation?.addEventListener === "function";
+        const supportsVTA =
             typeof (document as any).startViewTransition === "function";
+        const useVTPath = supportsNavAPI && supportsVTA;
 
-        if (hasVT) {
+        if (useVTPath) {
             const handler = (event: any) => {
                 const to = new URL(event.destination.url);
                 if (to.origin !== location.origin) return;
@@ -115,8 +118,13 @@ const BaseClient = () => {
                     async handler() {
                         showOverlay();
                         try {
-                            // Do NOT pushState here; the navigation you intercepted will commit the URL.
+                            // inner swap only; let the navigation commit the URL
                             await fetchAndSwapInner(to.href, { push: false });
+
+                            // Safety for cases where URL wasn't committed:
+                            if (location.href !== to.href) {
+                                history.replaceState(history.state, "", to.href);
+                            }
                         } finally {
                             hideOverlay();
                         }
@@ -125,42 +133,62 @@ const BaseClient = () => {
             };
 
             (window as any).navigation.addEventListener("navigate", handler);
-            onCleanup(() => (window as any).navigation.removeEventListener("navigate", handler));
-            return;
+            onCleanup(() =>
+                (window as any).navigation.removeEventListener("navigate", handler)
+            );
+
+            // Also handle back/forward explicitly (some platforms still emit this)
+            const popHandler = async () => {
+                showOverlay();
+                try {
+                    await fetchAndSwapInner(location.href, { push: false });
+                } finally {
+                    hideOverlay();
+                }
+            };
+            window.addEventListener("popstate", popHandler);
+            onCleanup(() => window.removeEventListener("popstate", popHandler));
+
+            return; // don’t install the fallback if we’re using VT path
         }
 
-        // Fallback: delegated links + popstate
+        // ---------- Firefox / Safari fallback (no Navigation API) ----------
         const target = document.querySelector(TARGET_SELECTOR) as HTMLElement | null;
-        if (target && !target.classList.contains("fade-grow-in")) target.classList.add("fade-grow-in");
+        if (target && !target.classList.contains("fade-grow-in")) {
+            target.classList.add("fade-grow-in");
+        }
 
-        const navClickHandler = async (e: MouseEvent) => {
+        // Intercept normal clicks
+        const clickHandler = async (e: MouseEvent) => {
             const a = (e.target as HTMLElement)?.closest("a") as HTMLAnchorElement | null;
             if (!isSafeLink(a)) return;
-            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+            // modifier keys (new tab etc.) -> let browser handle
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+
             e.preventDefault();
-            await fetchAndSwapInner(a!.href);
+            showOverlay();
+            try {
+                await fetchAndSwapInner(a!.href, { push: true }); // we must push in fallback
+            } finally {
+                hideOverlay();
+            }
         };
 
-        const delegatedClickHandler = async (e: MouseEvent) => {
-            const a = (e.target as HTMLElement)?.closest("a") as HTMLAnchorElement | null;
-            if (!a || !target || !target.contains(a)) return;
-            if (!isSafeLink(a)) return;
-            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-            e.preventDefault();
-            await fetchAndSwapInner(a.href);
-        };
-
+        // Handle back/forward
         const popHandler = async () => {
-            await fetchAndSwapInner(location.href);
+            showOverlay();
+            try {
+                await fetchAndSwapInner(location.href, { push: false });
+            } finally {
+                hideOverlay();
+            }
         };
 
-        document.addEventListener("click", navClickHandler);
-        if (target) target.addEventListener("click", delegatedClickHandler);
+        document.addEventListener("click", clickHandler);
         window.addEventListener("popstate", popHandler);
-
         onCleanup(() => {
-            document.removeEventListener("click", navClickHandler);
-            if (target) target.removeEventListener("click", delegatedClickHandler);
+            document.removeEventListener("click", clickHandler);
             window.removeEventListener("popstate", popHandler);
         });
     });

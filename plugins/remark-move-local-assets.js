@@ -1,21 +1,50 @@
-// plugins/remark-move-local-assets.js
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
 import { visit } from "unist-util-visit";
 import sizeOf from "image-size";
 
-export default function remarkMoveLocalAssets(opts = {
-    publicBase: undefined,
-    dedupeMode: undefined,
-    usageLogPath: undefined,
-    videoAttrs: undefined,
-    getPostId: undefined
-}) {
-    const publicBase = opts.publicBase ?? "auto";
-    const dedupeMode = opts.dedupeMode ?? "global";
+
+
+/** Parse `{...}` string into { class, style } */
+function parseAttrString(raw) {
+    // raw is like: `{foo bar .baz style="color:red" class="x y"}`
+    const out = { class: [], style: "" };
+    // strip outer braces
+    const s = raw.trim().replace(/^\{|\}$/g, "");
+    // very light tokenizer: split on spaces that are not inside quotes
+    const parts = s.match(/(?:[^\s"']+|"(?:\\.|[^"])*"|'(?:\\.|[^'])*')+/g) || [];
+    for (const part of parts) {
+        // class="..."
+        const clsMatch = part.match(/^class=(?:"([^"]*)"|'([^']*)')$/);
+        if (clsMatch) {
+            const v = (clsMatch[1] ?? clsMatch[2] ?? "").trim();
+            if (v) out.class.push(...v.split(/\s+/));
+            continue;
+        }
+        // style="..."
+        const stMatch = part.match(/^style=(?:"([^"]*)"|'([^']*)')$/);
+        if (stMatch) {
+            const v = (stMatch[1] ?? stMatch[2] ?? "").trim();
+            if (v) out.style = out.style ? `${out.style}; ${v}` : v;
+            continue;
+        }
+        // .class or bare token => class
+        if (part.startsWith(".")) out.class.push(part.slice(1));
+        else out.class.push(part);
+    }
+    return {
+        class: out.class.join(" ").trim(),
+        style: out.style.trim(),
+    };
+}
+
+export default function remarkMoveLocalAssets(opts = {}) {
+    const publicBase   = opts.publicBase   ?? "auto";
+    const dedupeMode   = opts.dedupeMode   ?? "global";
     const usageLogPath = opts.usageLogPath ?? path.resolve(".asset-usage.json");
-    const videoAttrs = opts.videoAttrs ?? "autoplay muted loop playsinline";
+    const debugLogPath = opts.debugLogPath ?? path.resolve(".debug-log.txt");
+    const videoAttrs   = opts.videoAttrs   ?? "autoplay muted loop playsinline";
 
     const defaultGetPostId = (vfilePath) => {
         const rootMarker = `${path.sep}src${path.sep}content${path.sep}`;
@@ -27,7 +56,7 @@ export default function remarkMoveLocalAssets(opts = {
     const getPostId = opts.getPostId ?? defaultGetPostId;
 
     const IMG_EXTS_FOR_SIZE = new Set([
-        ".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".tiff", ".avif"
+        ".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".tiff", ".avif",
     ]);
 
     const sha1File = (absPath) => {
@@ -42,97 +71,76 @@ export default function remarkMoveLocalAssets(opts = {
 
     // Load or init usage log
     let usageData = {};
+    fs.writeFileSync(debugLogPath, "blah\n");
     if (fs.existsSync(usageLogPath)) {
-        try {
-            usageData = JSON.parse(fs.readFileSync(usageLogPath, "utf8"));
-        } catch {
-            usageData = {};
-        }
+        try { usageData = JSON.parse(fs.readFileSync(usageLogPath, "utf8")); }
+        catch { usageData = {}; }
     }
+
 
     return async function transformer(tree, file) {
         const filePath = file.path;
-        const postId = getPostId(filePath);
-        const mdDir = path.dirname(filePath);
+        const postId   = getPostId(filePath);
+        const mdDir    = path.dirname(filePath);
+        const jobs     = [];
 
-        const jobs = [];
+        fs.appendFileSync(debugLogPath, "woo\n");
 
-        visit(tree, (node) => node.type === "image", (node) => {
-            const url = (node.url || "").trim();
-            if (!url || /^https?:\/\//i.test(url) || url.startsWith("/")) return;
+        visit(tree, "paragraph", (para) => {
+            fs.appendFileSync(debugLogPath, "visit\n");
+            const children = para.children || [];
+            for (let i = 0; i < children.length; i++) {
+                const node = children[i];
+                if (node.type !== "image") continue;
 
-            const absSrc = path.resolve(mdDir, url);
-            if (!fs.existsSync(absSrc)) return;
+                // 1) Gather attrs
+                let className = [];
+                let style = "";
 
-            const ext = path.extname(absSrc).toLowerCase();
-            const sha1 = sha1File(absSrc);
-            const hashedName = `${sha1}${ext}`;
+                // Case A: remark-attr already populated hProperties
+                const hProps = (node.data && node.data.hProperties) || {};
+                if (hProps.class || hProps.className) {
+                    const classes = (hProps.className ?? hProps.class ?? "").toString().trim();
+                    if (classes) className.push(...classes.split(/\s+/));
+                }
+                if (hProps.style) style = hProps.style.toString().trim();
 
-            let publicRel;
-            let publicAbs;
-            if (dedupeMode === "global") {
-                const dir = path.resolve("public", publicBase, "hash");
-                ensureDir(dir);
-                publicAbs = path.resolve(dir, hashedName);
-                publicRel = `/${publicBase}/hash/${hashedName}`;
-            } else {
-                const dir = path.resolve("public", publicBase, "images", postId);
-                ensureDir(dir);
-                publicAbs = path.resolve(dir, hashedName);
-                publicRel = `/${publicBase}/images/${postId}/${hashedName}`;
+                // Case B: trailing "{...}" text node when remark-attr is OFF
+                if (i + 1 < children.length && children[i + 1].type === "text") {
+                    fs.appendFileSync(debugLogPath, "Case B\n");
+                    const nextText = children[i + 1].value || "";
+                    fs.appendFileSync(debugLogPath, nextText);
+                    fs.appendFileSync(debugLogPath, children[i + 1]);
+                    fs.appendFileSync(debugLogPath, "\n");
+                    const m = nextText.match(/^\s*\{[^}]*\}\s*$/);
+                    if (m) {
+                        const parsed = parseAttrString(nextText); // your helper
+
+                        fs.appendFileSync(debugLogPath, parsed);
+
+                        if (parsed.className?.length) className.push(...parsed.className);
+                        if (parsed.style) style = style ? `${style}; ${parsed.style}` : parsed.style;
+                        children.splice(i + 1, 1); // remove the brace text node
+                    }
+                }
+
+                // 2) Resolve/copy/rehash as you already do...
+                // (keep your hashing + copy code here; omitted for brevity)
+
+                // 3) Write back attributes in mdast-friendly way
+                node.data = node.data || {};
+                node.data.hProperties = {
+                    ...(node.data.hProperties || {}),
+                    ...(className.length ? { className } : {}),
+                    ...(style ? { style } : {}),
+                    // ...(width && height ? { width, height } : {}),
+                };
+
             }
-
-            // Log hash usage for cleanup later
-            usageData[sha1] = {
-                ext,
-                lastUsed: new Date().toISOString(),
-                path: publicRel
-            };
-
-            // Only copy if file doesn't exist already
-            if (!fs.existsSync(publicAbs)) {
-                jobs.push(fs.promises.copyFile(absSrc, publicAbs));
-            }
-
-            const props = (node.data && node.data.hProperties) || {};
-            const cls = (props.class || props.className || "").trim();
-            const style = (props.style || "").trim();
-
-            if (ext === ".mp4") {
-                node.type = "html";
-                const classAttr = cls ? ` class="${cls}"` : "";
-                const styleAttr = style ? ` style="${style}"` : "";
-                node.value = `<video ${videoAttrs}${classAttr}${styleAttr}>
-  <source src="${publicRel}" type="video/mp4">
-  Your browser does not support the video tag.
-</video>`;
-                delete node.url;
-                delete node.alt;
-                return;
-            }
-
-            let width, height;
-            if (IMG_EXTS_FOR_SIZE.has(ext)) {
-                try {
-                    const dims = sizeOf(absSrc);
-                    width = dims?.width;
-                    height = dims?.height;
-                } catch {}
-            }
-
-            node.url = publicRel;
-            node.data = node.data || {};
-            node.data.hProperties = {
-                ...(node.data.hProperties || {}),
-                ...(cls ? { class: cls } : {}),
-                ...(style ? { style } : {}),
-                ...(width && height ? { width, height } : {}),
-            };
         });
 
-        if (jobs.length) await Promise.all(jobs);
 
-        // Save usage log back to disk
+        if (jobs.length) await Promise.all(jobs);
         fs.writeFileSync(usageLogPath, JSON.stringify(usageData, null, 2));
     };
 }

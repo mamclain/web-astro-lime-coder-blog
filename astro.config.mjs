@@ -2,19 +2,28 @@ import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import solidJs from '@astrojs/solid-js';
 import remarkDirective from "remark-directive";
-import moveLocalAssets from "./plugins/remark-move-local-assets.js";
+import remarkMoveLocalAssets  from "./plugins/remark-move-local-assets.js";
+// import remarkAttr from 'remark-attr';
 
 export default defineConfig({
     outDir: './dist',
     markdown: {
         shikiConfig: { theme: "dracula" },
         remarkPlugins: [
-            remarkDirective,
-            [moveLocalAssets, {
-                // optional: customize base folder or post id derivation
-                // publicBase: "assets/auto/images",
-                // getPostId: (vfilePath) => { ... }
+            // remarkDirective,
+            // [remarkAttr, { allowDangerousDOMEventHandlers: true, elements: ['image','link'] }],
+            [remarkMoveLocalAssets, {
+                // publicBase: 'assets',
+                // dedupeMode: 'global',
+                // usageLogPath: '.asset-usage.json',
+                // videoAttrs: 'autoplay muted loop playsinline',
             }],
+        ],
+    },
+    content: {
+        remarkPlugins: [
+            // [remarkAttr, { allowDangerousDOMEventHandlers: true, elements: ["image","link"] }],
+            remarkMoveLocalAssets,
         ],
     },
     vite: {

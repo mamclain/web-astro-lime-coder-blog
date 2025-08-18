@@ -42,23 +42,20 @@ const description = "Lime Coder is a personal blog dedicated to programming and 
 ---
 
 <Base ...>
-    <div class="flex flex-col min-h-dvh">
-        <!-- Sticky Hero -->
-        <div class="shrink-0 sticky top-0 z-40 bg-white">
-            <Hero />
-        </div>
+    <!-- Non-scrolling header area -->
+    <div class="shrink-0 bg-white">
+        <Hero />
+    </div>
 
-        <!-- Scrollable posts area -->
-        <div class="flex-1 overflow-y-auto px-4 sm:px-8 pb-8 pt-4"
-             style="max-height: calc(100vh - 300px);">
-            <PostGrid
-                    items={items}
-                    initialCount={12}
-                    step={8}
-                    keepMax={60}
-            />
-            <div class="h-16 sm:h-20"></div> <!-- bottom spacer -->
-        </div>
+    <!-- The ONLY scroller -->
+    <div class="flex-1 min-h-0 overflow-y-auto px-4 sm:px-8 pb-8 pt-4">
+        <PostGrid
+                items={items}
+                initialCount={12}
+                step={8}
+                keepMax={60}
+        />
+        <div class="h-16 sm:h-20"></div>
     </div>
 </Base>
 

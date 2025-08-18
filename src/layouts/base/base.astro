@@ -35,8 +35,9 @@ const { title, url, description } = Astro.props;
         </div>
     </aside>
 
-    <main id="app-main" class="relative min-h-0 h-dvh overflow-y-auto">
-        <div id="transition-target" class="fade-grow-in min-h-0">
+    <main id="app-main" class="relative h-dvh overflow-hidden">
+        <!-- Make transition-target the flex column that fills main -->
+        <div id="transition-target" class="fade-grow-in h-full min-h-0 flex flex-col">
             <slot />
         </div>
 
@@ -47,7 +48,6 @@ const { title, url, description } = Astro.props;
                 <img src="/images/loaders/loader_1.png" alt="" class="color" />
             </div>
         </div>
-
     </main>
 </div>
 

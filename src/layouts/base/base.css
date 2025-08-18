@@ -1,6 +1,6 @@
 :root {
     --loader-size: 200px;
-    --reveal-ms: 1200ms;
+    --reveal-ms: 800ms;
 }
 
 /* Base (hidden by default) */
