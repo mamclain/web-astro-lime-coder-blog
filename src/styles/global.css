@@ -2,6 +2,9 @@
 
 @import "tailwindcss";
 
+/* Enable the Typography plugin in v4 */
+@plugin "@tailwindcss/typography";
+
 /* Theme tokens for “Lime Noir” look */
 @theme {
     --color-surface: #0b0f14;
@@ -37,17 +40,46 @@
 .badge { @apply text-xs rounded px-2 py-1 border border-white/10 bg-white/5; }
 
 
+/* Floated images should behave like inline media inside prose */
+.prose :where(img.float-left, img.float-right) {
+    display: inline-block;       /* not block */
+}
 
-/*@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));*/
-/*@import "tailwindcss/preflight";*/
-/*@import "tailwindcss/utilities";*/
+/* Convenience margins so text wraps nicely */
+.prose :where(img.float-left)  { float: left;  margin-right: 1rem; margin-bottom: .5rem; }
+.prose :where(img.float-right) { float: right; margin-left:  1rem; margin-bottom: .5rem; }
 
-/*body {*/
-/*    font-family: 'Inter', system-ui, sans-serif;*/
-/*}*/
+/* A helper to stop wrapping when you want to end the float */
+.prose :where(.clear-both) { clear: both; }
 
-/*.font-site-serif {*/
-/*    font-family: "magistral", sans-serif;*/
-/*    font-weight: 700;*/
-/*    font-style: normal;*/
-/*}*/
+@layer components {
+    .img-left  { @apply float-left inline-block mr-4 mb-2 max-w-[30%] rounded-lg border border-white/10; }
+    .img-right { @apply float-right inline-block ml-4 mb-2 max-w-[30%] rounded-lg border border-white/10; }
+    .img-left-long  { @apply float-left inline-block mr-4 mb-2 max-w-[65%] rounded-lg border border-white/10; }
+    .img-right-long { @apply float-right inline-block ml-4 mb-2 max-w-[65%] rounded-lg border border-white/10; }
+    .img-left-full  { @apply float-left inline-block mr-4 mb-2 max-w-[100%] rounded-lg border border-white/10; }
+}
+
+
+/* Tighter paragraph rhythm */
+.prose p { margin-top: 0.9em; margin-bottom: 0.9em; }
+
+/* 🔥 Link styles (work for both normal and inverted prose) */
+.prose a {
+    color: theme(colors.lime.400);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    font-weight: 500;
+    transition: color .15s ease, text-decoration-color .15s ease;
+}
+.prose a:hover {
+    color: theme(colors.lime.300);
+}
+
+/* If you’re using .prose-invert (dark mode) */
+.prose.prose-invert a {
+    color: theme(colors.lime.400);
+}
+.prose.prose-invert a:hover {
+    color: theme(colors.lime.300);
+}

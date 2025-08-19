@@ -3,6 +3,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
+    "dev:inspect": "cross-env NODE_OPTIONS=--inspect=9229 astro dev",
     "build": "astro build",
     "preview": "astro preview"
   },
@@ -13,9 +14,11 @@
     "solid-js": "^1.9.8"
   },
   "devDependencies": {
+    "@tailwindcss/typography": "^0.5.16",
     "@types/js-yaml": "^4.0.9",
     "@types/papaparse": "^5.3.16",
     "autoprefixer": "^10.4.0",
+    "cross-env": "^10.0.0",
     "image-size": "^2.0.2",
     "js-yaml": "^4.1.0",
     "papaparse": "^5.5.3",

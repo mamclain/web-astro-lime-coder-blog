@@ -6,16 +6,16 @@ import { getCollection } from "astro:content";
 import {permalinkFromSlug} from "../lib/permalinks";
 
 let  posts = await getCollection("blog");
-posts = [
-    ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts,
-    ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts,
-    ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts,
-    ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts,
-    ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts,
-    ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts,
-    ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts,
-    ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts,
-];
+// posts = [
+//     ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts,
+//     ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts,
+//     ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts,
+//     ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts,
+//     ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts,
+//     ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts,
+//     ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts,
+//     ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts,
+// ];
 
 // sort newest first
 posts.sort((a,b) => +b.data.date - +a.data.date);

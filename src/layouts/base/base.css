@@ -1,23 +1,18 @@
 :root {
-    --loader-size: 200px;
+    --loader-size: 500px;  /* image width; auto height */
     --reveal-ms: 800ms;
 }
 
-/* Base (hidden by default) */
+/* Base (hidden by default) – overlay the MAIN column */
 #nav-loader.loader {
-    /* was: position:absolute; inset:0; */
-    position: sticky;   /* stick to main's scrollport */
-    top: 0;
-    height: 100%;       /* match the visible area of <main> */
-    width: 100%;
-
+    position: absolute;
+    inset: 0;                 /* cover the visible area of <main> */
     display: grid;
     place-items: center;
-
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    z-index: 999;       /* above main content */
+    z-index: 999;             /* above main content */
     transition: opacity 150ms ease;
 }
 
@@ -27,32 +22,22 @@ html.loader-show #nav-loader {
     visibility: visible;
 }
 
-.loader-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-}
-
 /* Stacked images: grayscale base + colored overlay clipped from bottom */
 .loader-image {
     position: relative;
-    width:50%; /* Fixed width */
+    width: var(--loader-size); /* fixed width, auto height via images */
     height: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 .loader-image img {
     display: block;
-    width: 100%;        /* fill the container's --loader-size */
+    width: 100%;
     height: auto;
 }
 .loader-image img.gray { filter: grayscale(100%); }
 .loader-image img.color {
     position: absolute;
     inset: 0;
-    clip-path: inset(100% 0 0 0);
+    clip-path: inset(100% 0 0 0);  /* hidden at start */
 }
 
 /* Animate bottom -> top reveal when .animating is applied */
@@ -63,4 +48,13 @@ html.loader-show #nav-loader {
 @keyframes revealColor {
     from { clip-path: inset(100% 0 0 0); }
     to   { clip-path: inset(0 0 0 0); }
+}
+
+.prose p {
+    margin-top: 0.75em;
+    margin-bottom: 0.75em;
+}
+
+.prose a {
+    transition: color 0.2s ease, text-decoration 0.2s ease;
 }

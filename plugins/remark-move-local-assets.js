@@ -8,42 +8,40 @@ import sizeOf from "image-size";
 
 /** Parse `{...}` string into { class, style } */
 function parseAttrString(raw) {
-    // raw is like: `{foo bar .baz style="color:red" class="x y"}`
-    const out = { class: [], style: "" };
-    // strip outer braces
-    const s = raw.trim().replace(/^\{|\}$/g, "");
-    // very light tokenizer: split on spaces that are not inside quotes
+    const out = { class: [], style: "", attrs: "" };
+    const s = raw.trim().replace(/^\{|\}$/g, "").replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
+
     const parts = s.match(/(?:[^\s"']+|"(?:\\.|[^"])*"|'(?:\\.|[^'])*')+/g) || [];
     for (const part of parts) {
-        // class="..."
         const clsMatch = part.match(/^class=(?:"([^"]*)"|'([^']*)')$/);
         if (clsMatch) {
             const v = (clsMatch[1] ?? clsMatch[2] ?? "").trim();
             if (v) out.class.push(...v.split(/\s+/));
             continue;
         }
-        // style="..."
         const stMatch = part.match(/^style=(?:"([^"]*)"|'([^']*)')$/);
         if (stMatch) {
             const v = (stMatch[1] ?? stMatch[2] ?? "").trim();
             if (v) out.style = out.style ? `${out.style}; ${v}` : v;
             continue;
         }
-        // .class or bare token => class
+        const attrMatch = part.match(/^attrs=(?:"([^"]*)"|'([^']*)')$/);
+        if (attrMatch) {
+            const v = (attrMatch[1] ?? attrMatch[2] ?? "").trim();
+            if (v) out.attrs = out.attrs ? `${out.attrs}; ${v}` : v;
+            continue;
+        }
         if (part.startsWith(".")) out.class.push(part.slice(1));
         else out.class.push(part);
     }
-    return {
-        class: out.class.join(" ").trim(),
-        style: out.style.trim(),
-    };
+    return { class: out.class.join(" ").trim(), style: out.style.trim(), attrs: out.attrs.trim() };
 }
+
 
 export default function remarkMoveLocalAssets(opts = {}) {
     const publicBase   = opts.publicBase   ?? "auto";
     const dedupeMode   = opts.dedupeMode   ?? "global";
     const usageLogPath = opts.usageLogPath ?? path.resolve(".asset-usage.json");
-    const debugLogPath = opts.debugLogPath ?? path.resolve(".debug-log.txt");
     const videoAttrs   = opts.videoAttrs   ?? "autoplay muted loop playsinline";
 
     const defaultGetPostId = (vfilePath) => {
@@ -71,7 +69,6 @@ export default function remarkMoveLocalAssets(opts = {}) {
 
     // Load or init usage log
     let usageData = {};
-    fs.writeFileSync(debugLogPath, "blah\n");
     if (fs.existsSync(usageLogPath)) {
         try { usageData = JSON.parse(fs.readFileSync(usageLogPath, "utf8")); }
         catch { usageData = {}; }
@@ -84,61 +81,124 @@ export default function remarkMoveLocalAssets(opts = {}) {
         const mdDir    = path.dirname(filePath);
         const jobs     = [];
 
-        fs.appendFileSync(debugLogPath, "woo\n");
 
         visit(tree, "paragraph", (para) => {
-            fs.appendFileSync(debugLogPath, "visit\n");
             const children = para.children || [];
             for (let i = 0; i < children.length; i++) {
                 const node = children[i];
                 if (node.type !== "image") continue;
 
-                // 1) Gather attrs
-                let className = [];
-                let style = "";
-
-                // Case A: remark-attr already populated hProperties
+                // ---- 1) Gather attrs from existing hProperties + trailing {..} ----
                 const hProps = (node.data && node.data.hProperties) || {};
-                if (hProps.class || hProps.className) {
-                    const classes = (hProps.className ?? hProps.class ?? "").toString().trim();
-                    if (classes) className.push(...classes.split(/\s+/));
-                }
-                if (hProps.style) style = hProps.style.toString().trim();
+                const existingClass =
+                    (hProps.className && Array.isArray(hProps.className)
+                            ? hProps.className.join(" ")
+                            : hProps.className || hProps.class || ""
+                    ).toString().trim();
+                let classList = existingClass ? existingClass.split(/\s+/) : [];
+                let style = (hProps.style || "").toString().trim();
+                let attrs = (hProps.attrs || "").toString().trim();   // NEW: carry any pre-set attrs
 
-                // Case B: trailing "{...}" text node when remark-attr is OFF
+                // Trailing "{...}" text node (since remark-attr is OFF)
                 if (i + 1 < children.length && children[i + 1].type === "text") {
-                    fs.appendFileSync(debugLogPath, "Case B\n");
                     const nextText = children[i + 1].value || "";
-                    fs.appendFileSync(debugLogPath, nextText);
-                    fs.appendFileSync(debugLogPath, children[i + 1]);
-                    fs.appendFileSync(debugLogPath, "\n");
                     const m = nextText.match(/^\s*\{[^}]*\}\s*$/);
                     if (m) {
-                        const parsed = parseAttrString(nextText); // your helper
-
-                        fs.appendFileSync(debugLogPath, parsed);
-
-                        if (parsed.className?.length) className.push(...parsed.className);
+                        const parsed = parseAttrString(nextText);
+                        if (parsed.class) classList.push(...parsed.class.split(/\s+/));
                         if (parsed.style) style = style ? `${style}; ${parsed.style}` : parsed.style;
-                        children.splice(i + 1, 1); // remove the brace text node
+                        if (parsed.attrs) attrs = parsed.attrs;           // NEW: replace attrs if provided
+                        children.splice(i + 1, 1); // remove the {..} text node
                     }
                 }
 
-                // 2) Resolve/copy/rehash as you already do...
-                // (keep your hashing + copy code here; omitted for brevity)
+                const classStr = Array.from(new Set(classList.filter(Boolean))).join(" ");
 
-                // 3) Write back attributes in mdast-friendly way
+                // ---- 2) Resolve / copy / rewrite URL (unchanged) ----
+                const url = (node.url || "").trim();
+                if (!url || /^https?:\/\//i.test(url) || url.startsWith("/")) {
+                    node.data = node.data || {};
+                    node.data.hProperties = {
+                        ...(node.data.hProperties || {}),
+                        ...(classStr ? { class: classStr } : {}),
+                        ...(style ? { style } : {}),
+                    };
+                    continue;
+                }
+
+                const absSrc = path.resolve(mdDir, url);
+                if (!fs.existsSync(absSrc)) {
+                    node.data = node.data || {};
+                    node.data.hProperties = {
+                        ...(node.data.hProperties || {}),
+                        ...(classStr ? { class: classStr } : {}),
+                        ...(style ? { style } : {}),
+                    };
+                    continue;
+                }
+
+                const ext = path.extname(absSrc).toLowerCase();
+                const sha1 = sha1File(absSrc);
+                const hashedName = `${sha1}${ext}`;
+
+                let publicRel, publicAbs;
+                if (dedupeMode === "global") {
+                    const dir = path.resolve("public", publicBase, "hash");
+                    ensureDir(dir);
+                    publicAbs = path.resolve(dir, hashedName);
+                    publicRel = `/${publicBase}/hash/${hashedName}`;
+                } else {
+                    const dir = path.resolve("public", publicBase, "images", postId);
+                    ensureDir(dir);
+                    publicAbs = path.resolve(dir, hashedName);
+                    publicRel = `/${publicBase}/images/${postId}/${hashedName}`;
+                }
+
+                usageData[sha1] = { ext, lastUsed: new Date().toISOString(), path: publicRel };
+                if (!fs.existsSync(publicAbs)) jobs.push(fs.promises.copyFile(absSrc, publicAbs));
+
+                // ---- 3) Emit video or image with attrs ----
+                if (ext === ".mp4") {
+                    // Prefer provided attrs over default videoAttrs
+                    const baseAttrs = attrs || videoAttrs;
+
+                    // Build the open tag safely by joining parts
+                    const openParts = ["<video"];
+                    if (baseAttrs) openParts.push(baseAttrs);
+                    if (classStr) openParts.push(`class="${classStr}"`);
+                    if (style) openParts.push(`style="${style}"`);
+                    const openTag = openParts.join(" ") + ">";
+
+                    para.children[i] = {
+                        type: "html",
+                        value: `${openTag}
+  <source src="${publicRel}" type="video/mp4">
+  Your browser does not support the video tag.
+</video>`,
+                    };
+                    continue;
+                }
+
+                // Image: optionally add width/height (CLS)
+                let width, height;
+                if (IMG_EXTS_FOR_SIZE.has(ext)) {
+                    try {
+                        const dims = sizeOf(absSrc);
+                        width = dims?.width;
+                        height = dims?.height;
+                    } catch {}
+                }
+
+                node.url = publicRel;
                 node.data = node.data || {};
                 node.data.hProperties = {
                     ...(node.data.hProperties || {}),
-                    ...(className.length ? { className } : {}),
+                    ...(classStr ? { class: classStr } : {}),
                     ...(style ? { style } : {}),
-                    // ...(width && height ? { width, height } : {}),
+                    ...(width && height ? { width, height } : {}),
                 };
-
             }
         });
-
 
         if (jobs.length) await Promise.all(jobs);
         fs.writeFileSync(usageLogPath, JSON.stringify(usageData, null, 2));

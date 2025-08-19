@@ -2,7 +2,7 @@
 title:  "The Jekyll Blog is Mostly Online"
 date: 2025-01-18T01:20:00-05:00
 image: book_of_lime.png
-categories: [site, update]
+categories: [site, news]
 use_elevenlabs: true
 ---
 
@@ -10,14 +10,13 @@ So after spending a few hours, I have a mostly working static Jekyll blog that l
 
 <!--more-->
 
-![Lime Book](book_of_lime.png){class="col-md-2 float-md-start me-3 mb-1 rounded-3"}
-
-pain in the butt aasdfasdf asdf asdf asdf goadsfas
+![Lime Book](book_of_lime.png){img-left}
 
 
 While I dabbled with [Jekyll][Jekyll] a year or so ago
-(**as I was looking at making a dedicated [midjourney][midjourney] blog at the time**),
+(**as I was looking at making a dedicated [Midjourney][midjourney] blog at the time**),
 I never really got around to making a full-fledged blog with it. 
+
 
 Static blogs were quite popular back in the day (**circa 2008**) and filled a niche for those of us who were tired of
 dealing with PHP systems like [e107][e107] and the inevitable exploits that arose.
