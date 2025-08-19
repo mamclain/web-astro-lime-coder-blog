@@ -38,7 +38,7 @@ function parseAttrString(raw) {
 }
 
 
-export default function remarkMoveLocalAssets(opts = {}) {
+export default function remarkMoveLocalAssetsOld(opts = {}) {
     const publicBase   = opts.publicBase   ?? "auto";
     const dedupeMode   = opts.dedupeMode   ?? "global";
     const usageLogPath = opts.usageLogPath ?? path.resolve(".asset-usage.json");
