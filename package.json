@@ -14,6 +14,7 @@
     "solid-js": "^1.9.8"
   },
   "devDependencies": {
+    "@astrojs/mdx": "^4.3.4",
     "@tailwindcss/typography": "^0.5.16",
     "@types/js-yaml": "^4.0.9",
     "@types/papaparse": "^5.3.16",

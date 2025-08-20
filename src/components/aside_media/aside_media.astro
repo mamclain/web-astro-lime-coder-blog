@@ -1,0 +1,27 @@
+---
+import "./aside_media.css";
+const {
+    src,
+    alt = "",
+    side = "right", // "right" | "left"
+    width = "clamp(14rem, 24vw, 22rem)",
+    type = "img",   // "img" | "video"
+    caption
+} = Astro.props;
+---
+
+<div class={`media-pair ${side === "left" ? "media-left" : "media-right"}`}>
+    <div class="media-main">
+        <slot />
+    </div>
+
+    <figure class="media-figure">
+        {type === "img" ? (
+                <img src={src} alt={alt} loading="lazy" decoding="async" />
+        ) : (
+                <video src={src} controls playsinline muted />
+        )}
+        {caption && <figcaption>{caption}</figcaption>}
+    </figure>
+</div>
+
