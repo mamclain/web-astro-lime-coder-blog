@@ -1,43 +1,125 @@
 ---
 // src/pages/[...slug].astro
+//
+// Catch-all blog post route.
+//
+// This page renders individual blog posts sourced from the `blog` content
+// collection. It supports nested slugs and normalizes duplicate trailing
+// segments to ensure canonical URLs and stable routing.
+//
+
 import { getCollection, type CollectionEntry } from "astro:content";
 import Base from "../layouts/base/base.astro";
 import { segmentsFromSlug, permalinkFromSlug } from "../lib/permalinks";
 import { render } from 'astro:content';
 
+/**
+ * Generate static paths for all blog posts.
+ *
+ * Astro's catch-all routes (`[...slug]`) expect `params.slug` to be a single
+ * slash-delimited string. Blog slugs may contain duplicate trailing segments
+ * depending on the content pipeline, so we normalize them before joining.
+ */
 export async function getStaticPaths() {
     const posts = await getCollection("blog");
+
+    // Sort newest → oldest for predictable output ordering
     posts.sort((a, b) => +b.data.date - +a.data.date);
 
     return posts.map((post) => ({
-        // catch-all expects a string path here (not array)
-        params: { slug: segmentsFromSlug(post.slug).join("/") },
+        params: {
+            slug: segmentsFromSlug(post.slug).join("/"),
+        },
         props: { post },
     }));
 }
 
+/**
+ * Blog post provided by `getStaticPaths`.
+ */
 const { post } = Astro.props as { post: CollectionEntry<"blog"> };
+
+/**
+ * Canonical permalink used for <link rel="canonical"> and sharing metadata.
+ * Always normalized and slash-terminated.
+ */
 const canonical = permalinkFromSlug(post.slug);
 
+
+/**
+ * Render the MDX/Markdown content and extract remark frontmatter injected
+ * by remark plugins (e.g. images, read time overrides).
+ */
 const { Content, remarkPluginFrontmatter } = await render(post);
-const hero = remarkPluginFrontmatter?.image ?? post.data.image; // fallback to original if missing
 
-const dateStr = (post.data.date instanceof Date ? post.data.date : new Date(post.data.date))
-    .toLocaleDateString();
+/**
+ * Hero image resolution order:
+ *  1. remark plugin frontmatter (highest priority)
+ *  2. original content frontmatter
+ */
+const hero =
+    remarkPluginFrontmatter?.image ??
+    post.data.image;
 
-const rt = ({body}: { body: any }) => {
-    return Math.max(1, Math.round((body.split(/\s+/).length || 0) / 200));
+
+/**
+ * Normalize the post date for display.
+ * Supports both Date objects and ISO/date strings.
+ */
+const dateStr = (
+    post.data.date instanceof Date
+        ? post.data.date
+        : new Date(post.data.date)
+).toLocaleDateString();
+
+/**
+ * Estimate reading time based on word count.
+ * Uses a conservative ~200 words/minute baseline.
+ */
+const estimateReadTime = ({ body }: { body: string }) => {
+    const words = body.split(/\s+/).length || 0;
+    return Math.max(1, Math.round(words / 200));
 };
 
-const readTime =rt({ body: post.body }) ?? remarkPluginFrontmatter?.readTime ?? "5 min read time";
-const use11 = post.data.use_elevenlabs ?? remarkPluginFrontmatter?.use_elevenlabs ?? false;
 
+/**
+ * Final read time resolution order:
+ *  1. Estimated from body
+ *  2. remark plugin override
+ *  3. Hard fallback
+ */
+const readTime =
+    estimateReadTime({ body: post.body }) ??
+    remarkPluginFrontmatter?.readTime ??
+    "5 min read time";
+
+/**
+ * Feature toggle for ElevenLabs narration.
+ * Can be set in either content frontmatter or remark plugins.
+ */
+const use11 =
+    post.data.use_elevenlabs ??
+    remarkPluginFrontmatter?.use_elevenlabs ??
+    false;
+
+/**
+ * Deterministic string hash used to assign stable colors to categories.
+ * Based on a djb2-style hash.
+ */
 function hashStr(s: string) {
     let h = 5381;
-    for (let i = 0; i < s.length; i++) h = ((h << 5) + h) ^ s.charCodeAt(i);
+    for (let i = 0; i < s.length; i++) {
+        h = ((h << 5) + h) ^ s.charCodeAt(i);
+    }
     return Math.abs(h);
 }
+
+/**
+ * Category color palette.
+ * Colors are selected deterministically per category name.
+ */
 const cats = post.data.categories ?? [];
+
 const catPalette = [
     "bg-lime-900/40 text-lime-200",
     "bg-sky-900/40 text-sky-200",
@@ -45,66 +127,72 @@ const catPalette = [
     "bg-fuchsia-900/40 text-fuchsia-200",
     "bg-emerald-900/40 text-emerald-200",
 ];
+
+/**
+ * Resolve a Tailwind color class for a category name.
+ */
 const colorFor = (name: string) => catPalette[hashStr(name) % catPalette.length];
 
 ---
 
 <Base title={post.data.title} url={`https://limecoder.com${canonical}`} description={post.data.excerpt}>
-    {/* This wrapper becomes the ONLY scroller in the main column */}
-    <article class="mx-auto max-w-screen-lg">
-        <!-- Top section with image + meta side by side -->
-        <header class="flex flex-col md:flex-row gap-6 items-start">
-            <!-- Cover image -->
-            {hero && (
-                    <div class="flex-shrink-0">
-                        <img
-                                src={hero}
-                                alt=""
-                                class="rounded-lg border border-white/10 object-cover w-[220px] aspect-[3/4]"
-                        />
+    <div class="flex-1 min-h-0 overflow-y-auto px-4 sm:px-8 py-6">
+        {/* This wrapper becomes the ONLY scroller in the main column */}
+        <article class="mx-auto max-w-screen-lg">
+            <!-- Top section with image + meta side by side -->
+            <header class="flex flex-col md:flex-row gap-6 items-start">
+                <!-- Cover image -->
+                {hero && (
+                        <div class="flex-shrink-0">
+                            <img
+                                    src={hero}
+                                    alt=""
+                                    class="rounded-lg border border-white/10 object-cover w-[120px] aspect-[3/4]"
+                            />
+                        </div>
+                )}
+
+                <!-- Meta -->
+                <div class="flex-1 min-w-0">
+                    <h1 class="font-display text-3xl md:text-4xl leading-tight">
+                        {post.data.title}
+                    </h1>
+
+                    <div class="mt-2 text-sm text-[var(--color-ink-muted)] flex flex-wrap items-center gap-2">
+                      <span>
+                        {(post.data.date instanceof Date ? post.data.date : new Date(post.data.date))
+                            .toLocaleDateString()}
+                      </span>
                     </div>
-            )}
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        {cats.map((c) => (
+                                <span class={`rounded-md px-2 py-0.5 text-sm font-medium ${colorFor(c)}`}>{c}</span>
+                        ))}
+                    </div>
+                    <div class="mt-3 flex items-center gap-4 text-sm text-[var(--color-ink-muted)]">
+                        {readTime && (
+                                <span class="inline-block rounded-md bg-sky-900/40 px-2 py-0.5 text-sm text-sky-200">{readTime} min read</span>
+                        )}
+                    </div>
+                    <div class="mt-3 flex items-center gap-4 text-sm text-[var(--color-ink-muted)]">
+                        {post.data.use_elevenlabs && (
+                                <button class="inline-flex items-center gap-2 rounded-full border border-white/20 px-3 py-1 hover:bg-white/10 transition">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4">
+                                        <path d="M8 5v14l11-7-11-7z" />
+                                    </svg>
+                                    Play on ElevenLabs
+                                </button>
+                        )}
+                    </div>
+                </div>
+            </header>
 
-            <!-- Meta -->
-            <div class="flex-1 min-w-0">
-                <h1 class="font-display text-3xl md:text-4xl leading-tight">
-                    {post.data.title}
-                </h1>
-
-                <div class="mt-2 text-sm text-[var(--color-ink-muted)] flex flex-wrap items-center gap-2">
-                  <span>
-                    {(post.data.date instanceof Date ? post.data.date : new Date(post.data.date))
-                        .toLocaleDateString()}
-                  </span>
-                </div>
-                <div class="mt-2 flex flex-wrap gap-2">
-                    {cats.map((c) => (
-                            <span class={`rounded-md px-2 py-0.5 text-sm font-medium ${colorFor(c)}`}>{c}</span>
-                    ))}
-                </div>
-                <div class="mt-3 flex items-center gap-4 text-sm text-[var(--color-ink-muted)]">
-                    {readTime && (
-                            <span class="inline-block rounded-md bg-sky-900/40 px-2 py-0.5 text-sm text-sky-200">{readTime} min read</span>
-                    )}
-                </div>
-                <div class="mt-3 flex items-center gap-4 text-sm text-[var(--color-ink-muted)]">
-                    {post.data.use_elevenlabs && (
-                            <button class="inline-flex items-center gap-2 rounded-full border border-white/20 px-3 py-1 hover:bg-white/10 transition">
-                                <svg viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4">
-                                    <path d="M8 5v14l11-7-11-7z" />
-                                </svg>
-                                Play on ElevenLabs
-                            </button>
-                    )}
-                </div>
+            <!-- Body -->
+            <div class="prose prose-invert max-w-none mt-8">
+                <Content />
             </div>
-        </header>
-
-        <!-- Body -->
-        <div class="prose prose-invert max-w-none mt-8">
-            <Content />
-        </div>
-    </article>
-    {/* Keep a little spacer so last paragraph isn't flush with viewport bottom */}
-    <div class="h-16"></div>
+        </article>
+        {/* Keep a little spacer so last paragraph isn't flush with viewport bottom */}
+        <div class="h-16"></div>
+    </div>
 </Base>

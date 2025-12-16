@@ -1,8 +1,22 @@
 /** @jsxImportSource solid-js */
 import { onMount, onCleanup } from "solid-js";
 
+/**
+ * Client-side navigation enhancer.
+ *
+ * Goals:
+ * - Show a full-page "nav loader" overlay during in-app navigation.
+ * - Prefer Chrome's Navigation API + View Transitions when available.
+ * - Fall back to click interception + history handling for other browsers.
+ *
+ * Assumptions:
+ * - The page contains an element matching TARGET_SELECTOR that can be swapped.
+ * - The overlay exists with id="nav-loader" and optionally contains:
+ *     .loader-image img.color   (used to force fully-revealed state on hide)
+ */
+
 const TARGET_SELECTOR = "#transition-target";
-const OUT_MS = 600;
+const OUT_MS = 300;
 
 
 function restartRevealAnimation() {

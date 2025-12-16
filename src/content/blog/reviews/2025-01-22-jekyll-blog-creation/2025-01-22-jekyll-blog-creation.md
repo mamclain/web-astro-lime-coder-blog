@@ -15,6 +15,7 @@ Here is my recount of the development process so far:
 ![Lime Man](man_walking_2.png){img-left}
 
 
+
 ![Jekyll Is Coming](jekyll_is_coming.mp4){class="img-right" attrs="controls playsinline"}
 
 To begin, I have to say that I am really impressed with the simplicity of the setup and 

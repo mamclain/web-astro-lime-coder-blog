@@ -5,6 +5,7 @@ import remarkDirective from "remark-directive";
 import remarkMoveLocalAssets from "./plugins/remark-move-local-assets.mjs";
 import remarkExpandMediaGeneric from "./plugins/remark-expand-media-generic.mjs";
 import mdx from "@astrojs/mdx";
+import mdxAttrsPre from "./vite.mdx-attrs-pre.js";
 
 
 // one source of truth for your remark plugins + options
@@ -13,6 +14,7 @@ const remarkStack = [
     [remarkMoveLocalAssets, { publicBase: 'auto', dedupeMode: 'global' }],
     [remarkExpandMediaGeneric, { videoAttrs: 'controls playsinline muted' }],
 ];
+
 
 
 export default defineConfig({
@@ -40,6 +42,6 @@ export default defineConfig({
     ],
 
     vite: {
-        plugins: [tailwindcss(), solidJs()],
+        plugins: [tailwindcss(), solidJs(),mdxAttrsPre()],
     },
 });

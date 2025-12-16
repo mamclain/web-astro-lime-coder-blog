@@ -1,11 +1,34 @@
 ---
+/**
+    * Blog index page.
+    *
+    * This page fetches all posts from the `blog` content collection, normalizes
+    * their permalinks, computes derived display metadata (reading time, tags),
+    * and passes the resulting items to the grid-based post listing component.
+*/
+
 import Base from "../layouts/base/base.astro";
 import Hero from "../components/hero/hero.astro";
 import PostGrid from "../components/post_grid/post_grid.astro";
 import { getCollection } from "astro:content";
 import {permalinkFromSlug} from "../lib/permalinks";
 
+
+/**
+ * Load all blog posts from the content collection.
+ *
+ * Note:
+ *  The commented-out duplication block below is intentionally retained for
+ *  stress-testing layout, pagination, and scroll performance.
+ */
 let  posts = await getCollection("blog");
+
+/** Duplicate posts for stress-testing layout and scroll performance.
+ *
+ * Note:
+ *  This block is intentionally retained (but commented out) for
+ *  stress-testing layout, pagination, and scroll performance.
+ */
 // posts = [
 //     ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts,
 //     ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts,
@@ -17,26 +40,48 @@ let  posts = await getCollection("blog");
 //     ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts, ...posts,
 // ];
 
-// sort newest first
+// ---------------------------------------------------------------------------
+// Sort posts newest → oldest
+// ---------------------------------------------------------------------------
 posts.sort((a,b) => +b.data.date - +a.data.date);
 
-// reading time helper (≈200 wpm)
-const rt = ({body}: { body: any }) => {
-    return Math.max(1, Math.round((body.split(/\s+/).length || 0) / 200));
+/**
+ * Estimate reading time using a simple word-count heuristic.
+ * Assumes ~200 words per minute.
+ */
+const estimateReadTime = ({ body }: { body: string }) => {
+    const words = body.split(/\s+/).length || 0;
+    return Math.max(1, Math.round(words / 200));
 };
 
 
+/**
+ * Transform raw collection entries into presentation-ready items
+ * consumed by <PostGrid />.
+ */
 const items = posts.map((p) => ({
+    // Canonical, normalized permalink
     href: permalinkFromSlug(p.slug),
+
+    // Primary display fields
     title: p.data.title,
     excerpt: p.data.excerpt,
     date: p.data.date,
     image: p.data.image,
+
+    // Optional metadata
     tags: p.data.tags ?? [],
-    minutes: rt({ body: p.body }),
+
+    // Derived display data
+    minutes: estimateReadTime({ body: p.body }),
+
+    // Decorative overlay used by card layout
     watermarkSrc: "/images/posts/lime_snake.png",
 }));
 
+/**
+ * Site-level metadata used by layout / SEO components.
+ */
 const url = "https://limecoder.com";
 const description = "Lime Coder is a personal blog dedicated to programming and other artistic interests.";
 ---

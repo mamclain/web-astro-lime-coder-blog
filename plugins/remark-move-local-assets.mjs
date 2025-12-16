@@ -26,6 +26,7 @@ export default function remarkMoveLocalAssets(opts = {}) {
         const rootMarker = `${path.sep}src${path.sep}content${path.sep}`;
         const i = vfilePath.lastIndexOf(rootMarker);
         let rel = i >= 0 ? vfilePath.slice(i + rootMarker.length) : path.basename(vfilePath);
+
         rel = rel.replace(/\.(md|mdx|markdown)$/i, "");
         return rel.replace(/\\/g, "/");
     };
@@ -146,36 +147,53 @@ export default function remarkMoveLocalAssets(opts = {}) {
 
         // 3) MDX/JSX components: <Media src="foo.png" ...>, <img src="..."/>, <Image .../>
         //    Covers both flow & text variants
-        const jsxTypes = new Set(["mdxJsxFlowElement", "mdxJsxTextElement"]);
-        visit(tree, (node) => jsxTypes.has(node.type), (node) => {
-            // Only handle if there is a string 'src' attribute
-            const props = node.attributes?.reduce?.((acc, a) => {
-                if (a && a.type === "mdxJsxAttribute" && typeof a.name === "string") {
-                    acc[a.name] = a.value;
-                }
-                return acc;
-            }, {}) ?? null;
+        const jsxNodeTypes = ["mdxJsxFlowElement", "mdxJsxTextElement"];
+        visit(tree, (node) => jsxNodeTypes.includes(node.type), (node) => {
+            const attrs = Array.isArray(node.attributes) ? node.attributes : [];
+            if (!attrs.length) return;
 
-            if (!props) return;
-            const rawSrc = typeof props.src === "string" ? props.src : null;
+            // find src attribute
+            let srcAttr = null;
+            for (const a of attrs) {
+                if (a && a.type === "mdxJsxAttribute" && a.name === "src") {
+                    srcAttr = a;
+                    break;
+                }
+            }
+            if (!srcAttr) return;
+
+            // read raw src (supports src="foo.png" and src={"foo.png"})
+            let rawSrc = null;
+            if (typeof srcAttr.value === "string") {
+                rawSrc = srcAttr.value;
+            } else if (
+                srcAttr.value &&
+                typeof srcAttr.value === "object" &&
+                srcAttr.value.type === "mdxJsxAttributeValueExpression" &&
+                typeof srcAttr.value.value === "string"
+            ) {
+                // mdx gives the JS expression as a string; accept simple string literal
+                const m = srcAttr.value.value.trim().match(/^['"]([^'"]+)['"]$/);
+                if (m) rawSrc = m[1];
+            }
             if (!rawSrc) return;
 
             const meta = rewriteLocal(rawSrc, mdDir, postId);
             if (!meta) return;
 
-            // Write the new src back
-            for (const a of node.attributes) {
-                if (a.type === "mdxJsxAttribute" && a.name === "src") {
-                    a.value = meta.publicRel;
-                    break;
-                }
-            }
+            // write back hashed src
+            srcAttr.value = meta.publicRel;
 
-            // Optionally attach width/height if not present and it’s an <img> or similar
-            const wantsDims = !("width" in props) && !("height" in props) && meta.width && meta.height;
-            if (wantsDims) {
-                node.attributes.push({ type: "mdxJsxAttribute", name: "width",  value: String(meta.width) });
-                node.attributes.push({ type: "mdxJsxAttribute", name: "height", value: String(meta.height) });
+            // annotate node with media meta
+            node.data = node.data || {};
+            node.data.media = { kind: meta.kind, ext: meta.ext, width: meta.width, height: meta.height };
+
+            // add width/height if not present and we have dimensions
+            const hasW = attrs.some((a) => a.type === "mdxJsxAttribute" && a.name === "width");
+            const hasH = attrs.some((a) => a.type === "mdxJsxAttribute" && a.name === "height");
+            if (meta.kind === "image" && meta.width && meta.height && !hasW && !hasH) {
+                attrs.push({ type: "mdxJsxAttribute", name: "width", value: String(meta.width) });
+                attrs.push({ type: "mdxJsxAttribute", name: "height", value: String(meta.height) });
             }
         });
 

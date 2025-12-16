@@ -1,5 +1,6 @@
 ---
 import "./aside_media.css";
+
 const {
     src,
     alt = "",
@@ -10,18 +11,24 @@ const {
 } = Astro.props;
 ---
 
-<div class={`media-pair ${side === "left" ? "media-left" : "media-right"}`}>
-    <div class="media-main">
-        <slot />
+<div class:list={['media-container', side === 'left' ? 'media-left' : 'media-right']}>
+    <img src={src} alt={alt} class="media-img not-prose" />
+    <div class="media-content">
+        <slot /> <!-- Renders the children (text content) -->
     </div>
-
-    <figure class="media-figure">
-        {type === "img" ? (
-                <img src={src} alt={alt} loading="lazy" decoding="async" />
-        ) : (
-                <video src={src} controls playsinline muted />
-        )}
-        {caption && <figcaption>{caption}</figcaption>}
-    </figure>
 </div>
 
+<!--<div class={`aside-wrap ${side === "left" ? "aside-left" : "aside-right"}`} style={`&#45;&#45;media-col:${width};`}>-->
+<!--    <figure class="aside-figure">-->
+<!--        {type === "img" ? (-->
+<!--                <img src={src} alt={alt} loading="lazy" decoding="async" />-->
+<!--        ) : (-->
+<!--                <video src={src} controls playsinline muted />-->
+<!--        )}-->
+<!--        {caption && <figcaption>{caption}</figcaption>}-->
+<!--    </figure>-->
+
+<!--    <div class="aside-content">-->
+<!--        <slot />-->
+<!--    </div>-->
+<!--</div>-->
