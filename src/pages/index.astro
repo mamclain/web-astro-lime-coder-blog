@@ -10,7 +10,7 @@
 import Base from "../layouts/base/base.astro";
 import Hero from "../components/hero/hero.astro";
 import PostGrid from "../components/post_grid/post_grid.astro";
-import { getCollection } from "astro:content";
+import { getCollection, render } from "astro:content";
 import {permalinkFromSlug} from "../lib/permalinks";
 
 
@@ -21,7 +21,19 @@ import {permalinkFromSlug} from "../lib/permalinks";
  *  The commented-out duplication block below is intentionally retained for
  *  stress-testing layout, pagination, and scroll performance.
  */
-let  posts = await getCollection("blog");
+const entries = await getCollection("blog");
+const posts = await Promise.all(
+    entries.map(async (entry) => {
+        const { remarkPluginFrontmatter } = await render(entry);
+
+        return {
+            ...entry,
+            // prefer the rewritten value from your remark plugin
+            image: remarkPluginFrontmatter.image ?? entry.data.image,
+        };
+    })
+);
+// let  posts = await getCollection("blog");
 
 /** Duplicate posts for stress-testing layout and scroll performance.
  *
@@ -67,7 +79,7 @@ const items = posts.map((p) => ({
     title: p.data.title,
     excerpt: p.data.excerpt,
     date: p.data.date,
-    image: p.data.image,
+    image: p.image,
 
     // Optional metadata
     tags: p.data.tags ?? [],

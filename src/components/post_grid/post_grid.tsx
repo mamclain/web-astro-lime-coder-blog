@@ -132,9 +132,9 @@ const PostGridClient: Component<Props> = (props) => {
              transition-all duration-300 overflow-hidden card"
                         >
                             {/* watermark: visible on load */}
-                            {p.watermarkSrc && (
+                            {p.image && (
                                 <img
-                                    src={p.watermarkSrc}
+                                    src={p.image}
                                     alt=""
                                     loading={idx() < 6 ? "eager" : "lazy"}        // eager-load a few for first paint
                                     decoding="async"
