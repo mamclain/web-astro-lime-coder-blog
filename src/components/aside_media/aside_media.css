@@ -54,6 +54,9 @@
         width: 100%; /* Full width on mobile */
         height: 200px; /* Back to natural height */
         margin-bottom: 1rem;
+        object-fit: cover;       /* or 'cover' if you want cropping */
+        object-position: 0 -100px;     /* <-- anchor to top */
+        /*display: block;*/
     }
 
     .media-left .media-content,

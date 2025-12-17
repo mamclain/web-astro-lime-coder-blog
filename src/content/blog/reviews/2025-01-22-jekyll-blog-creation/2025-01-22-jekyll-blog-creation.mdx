@@ -6,15 +6,13 @@ categories: [development, Jekyll]
 use_elevenlabs: true
 ---
 
+import Media from "../../../../components/aside_media/aside_media.astro";
+
+<Media src="man_walking_2.png" alt="Wafer Sun" side="left" >
+
 It's been about a week since I started configuring and using [Jekyll][Jekyll] for my blog.
 
 Here is my recount of the development process so far:
-
-<!--more-->
-
-![Lime Man](man_walking_2.png){img-left}
-
-
 
 ![Jekyll Is Coming](jekyll_is_coming.mp4){class="img-right" attrs="controls playsinline"}
 
@@ -36,12 +34,11 @@ static blog generator [Jekyll][Jekyll] for this purpose.
 well-documented, has a large community of users, and it is also [Github Pages][Github Pages] compatible.**
 
 So if you learn [Jekyll][Jekyll], you can also use this knowledge to create nice software documentation.
+</Media>
 
 ---
-
+<Media src="img.png" alt="Wafer Sun" side="right" >
 ### Installation
-
-![Lime Hand](img.png){img-left}
 
 The installation process for [Jekyll][Jekyll] is pretty straightforward, 
 at least as long as you have [Ruby][Ruby] installed on your system. 
@@ -76,6 +73,9 @@ I also like to keep my distribution (`dist`) directory separate from my source (
 Yet how you configure your organization structure is up to you and it won't affect the [Jekyll][Jekyll] install
 beyond maybe how your [Jekyll][Jekyll] configuration (`_config.yml`) file looks and how you handle website deployments.
 
+</Media>
+<Media src="img_7.png" alt="Wafer Sun" side="left" >
+
 At this point you will want to run the [Jekyll][Jekyll] install command in the directory where you want to 
 install your blog source code.
 
@@ -102,9 +102,6 @@ coder blog (`lime-coder-blog`) directory.
 **Note: There arnt a lot of file path dependencies within [Jekyll][Jekyll] so if you don't like the location of 
 your source code, you can always move it later**
 
-![Lime Lady](img_7.png){img-right}
-
-
 At this point you can test out your new blog by running the following command:
 
 ```console
@@ -112,10 +109,14 @@ cd lime-coder-blog
 bundle exec jekyll serve
 ```
 
+</Media>
+
 ![Web Demo](img_6.png){img-left}
 
 Which will start a locally hosted server created by [Bundler][Bundler] that both builds the [Jekyll][Jekyll] site and 
 serves the website on port 4000.
+
+
 
 This allows you to navigate to the [locally hosted][localhost site] (`http://localhost:4000`) website in your browser
 and see your new blog.
@@ -141,6 +142,7 @@ a [pre-built theme][Jekyll Themes],
 you should be fine; However, if you have a vision in your head of what you want your blog to look like or 
 are particular about how your blogging workflow should be, you may have to do some research and experimentation to 
 get it like you want it.
+
 
 ---
 

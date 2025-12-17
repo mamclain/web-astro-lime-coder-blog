@@ -100,7 +100,8 @@ function buildVideoHTML({ src, classStr, styleStr, chosenAttrs }) {
  * - Ensures a **non-empty** alt by deriving from filename if missing/empty (needed for Astro <Image>)
  */
 export default function remarkExpandMediaGeneric(opts = {}) {
-    const defaultVideoAttrs = opts.videoAttrs ?? "controls playsinline muted";
+    // const defaultVideoAttrs = opts.videoAttrs ?? "controls playsinline muted";
+    const defaultVideoAttrs = opts.videoAttrs ?? "controls playsinline";
 
     return function transformer(tree) {
         // A) Handle :img / :video directives BEFORE rehype

@@ -137,6 +137,26 @@ export default function remarkMoveLocalAssets(opts = {}) {
             }
         }
 
+        // 1.5) remark-directive nodes (:img / :video)
+        visit(tree, (node) =>
+                (node.type === "leafDirective" || node.type === "textDirective") &&
+                (node.name === "img" || node.name === "video"),
+            (node) => {
+                const attrs = node.attributes || {};
+                if (typeof attrs.src !== "string") return;
+
+                const meta = rewriteLocal(attrs.src, mdDir, postId);
+                if (!meta) return;
+
+                // mutate directive src in-place so downstream remarkExpandMediaGeneric sees it
+                attrs.src = meta.publicRel;
+                node.attributes = attrs;
+
+                // optional: keep media hint around (your expand plugin also checks node.data?.media)
+                node.data = node.data || {};
+                node.data.media = { kind: meta.kind, ext: meta.ext, width: meta.width, height: meta.height };
+            });
+
         // 2) Markdown images (including “URL + attrs” forms)
         visit(tree, "image", (node) => {
             const meta = rewriteLocal(node.url, mdDir, postId);

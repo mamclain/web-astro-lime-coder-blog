@@ -12,7 +12,7 @@ import mdxAttrsPre from "./vite.mdx-attrs-pre.js";
 const remarkStack = [
     remarkDirective,
     [remarkMoveLocalAssets, { publicBase: 'auto', dedupeMode: 'global' }],
-    [remarkExpandMediaGeneric, { videoAttrs: 'controls playsinline muted' }],
+    [remarkExpandMediaGeneric, { videoAttrs: 'controls playsinline' }],
 ];
 
 

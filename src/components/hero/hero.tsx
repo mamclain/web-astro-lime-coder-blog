@@ -22,7 +22,7 @@ export default function HeroScript({
 
         const video = document.createElement("video");
         video.src = videoSrc;
-        video.muted = true;
+        video.muted = false;
         video.playsInline = true;
         video.preload = "auto";
         video.className = videoClass || videoClassDefault;
