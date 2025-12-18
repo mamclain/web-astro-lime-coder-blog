@@ -11,8 +11,8 @@ const {
 } = Astro.props;
 ---
 
-<div class:list={['media-container', side === 'left' ? 'media-left' : 'media-right']}>
-    <img src={src} alt={alt} class="media-img not-prose" />
+<div class:list={['not-prose','media-container', side === 'left' ? 'media-left' : 'media-right']}>
+    <img src={src} alt={alt} class="media-img" />
     <div class="media-content">
         <slot /> <!-- Renders the children (text content) -->
     </div>

@@ -1,20 +1,26 @@
+:root {
+    --media-width: 250px;
+    --media-gap: 10px;
+    --media-total: calc(var(--media-width) + var(--media-gap));
+}
+
 .media-container {
-    position: relative; /* Allows absolute positioning inside */
-    min-height: 100px; /* Optional: Prevent collapse if text is very short */
+    position: relative;
+    min-height: 100px;
 }
 
 .media-img {
     position: absolute;
     top: 0;
-    width: 300px; /* Fixed width */
-    height: 100%; /* Matches container (text) height */
-    object-fit: cover; /* Crops to fill without distortion; use 'contain' to scale down instead (may leave blank space) */
+    width: var(--media-width);
+    height: 100%;
+    object-fit: cover;
     border-radius: 0.5rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
 }
 
 .media-content {
-    /* Prose-like styling */
     line-height: 1.5;
 }
 
@@ -32,7 +38,7 @@
 }
 
 .media-left .media-content {
-    padding-left: 320px; /* Image width + gap (300px + 20px) */
+    padding-left: var(--media-total);
 }
 
 .media-right .media-img {
@@ -40,7 +46,7 @@
 }
 
 .media-right .media-content {
-    padding-right: 320px; /* Image width + gap */
+    padding-right: var(--media-total);
 }
 
 /* Responsive: Stack on small screens */
@@ -66,60 +72,3 @@
     }
 }
 
-/*.aside-wrap {*/
-/*    !* IMPORTANT: no grid/flex here, so text can wrap around the float *!*/
-/*}*/
-
-/*.aside-figure {*/
-/*    width: var(--media-col, clamp(14rem, 24vw, 22rem));*/
-/*    margin: .25rem 0 1rem;*/
-/*    border-radius: .75rem;*/
-/*    overflow: hidden;*/
-/*    border: 1px solid rgba(255,255,255,.1);*/
-/*}*/
-
-/*.aside-left .aside-figure {*/
-/*    float: left;*/
-/*    margin-right: 1.25rem;*/
-/*}*/
-
-/*.aside-right .aside-figure {*/
-/*    float: right;*/
-/*    margin-left: 1.25rem;*/
-/*}*/
-
-/*.aside-figure > img,*/
-/*.aside-figure > video {*/
-/*    width: 100%;*/
-/*    height: auto;*/
-/*    display: block;*/
-/*}*/
-
-/*.aside-figure > figcaption {*/
-/*    font-size: .85rem;*/
-/*    color: var(--color-ink-muted, #a3a3a3);*/
-/*    padding: .4rem .6rem;*/
-/*}*/
-
-/*!* Make sure the wrapper contains the float *!*/
-/*.aside-wrap::after {*/
-/*    content: "";*/
-/*    display: table;*/
-/*    clear: both;*/
-/*}*/
-
-/*!* Mobile: disable float so it stacks *!*/
-/*@media (max-width: 768px) {*/
-/*    .aside-figure {*/
-/*        float: none !important;*/
-/*        width: 100%;*/
-/*        margin: 1rem 0;*/
-/*    }*/
-/*}*/
-
-/*!*.aside-content {*!*/
-/*!*    max-width: 60ch;*!*/
-/*!*    margin-inline: auto;*!*/
-
-/*!*    !*padding-top: clamp(2rem, 8vw, 6rem);*!*!*/
-/*!*}*!*/

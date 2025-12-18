@@ -64,7 +64,7 @@ you are comfortable with.
 
 Now I have a personal preference for directory structures that follow the following pattern:
 
-![Base Folder Structure](img_1.png){img-right}
+![Base Folder Structure](img_1.png){class="img-left"}
 
 where I have a source (`src`) directory that holds all my source code.
 
@@ -74,6 +74,7 @@ Yet how you configure your organization structure is up to you and it won't affe
 beyond maybe how your [Jekyll][Jekyll] configuration (`_config.yml`) file looks and how you handle website deployments.
 
 </Media>
+
 <Media src="img_7.png" alt="Wafer Sun" side="left" >
 
 At this point you will want to run the [Jekyll][Jekyll] install command in the directory where you want to 
@@ -87,7 +88,7 @@ gem install bundler jekyll
 jekyll new lime-coder-blog
 ```
 
-![Jekyll Default Source Install Structure](img_5.png){img-left}
+![Jekyll Default Source Install Structure](img_5.png){class="img-left"}
 
 Where the [gem][Gem] command tells the [Ruby][Ruby] [gem][Gem] package management software to install both 
 the [Bundler][Bundler] and [Jekyll][Jekyll] packages.
@@ -111,12 +112,11 @@ bundle exec jekyll serve
 
 </Media>
 
-![Web Demo](img_6.png){img-left}
+
+![Web Demo](img_6.png){class="img-right"}
 
 Which will start a locally hosted server created by [Bundler][Bundler] that both builds the [Jekyll][Jekyll] site and 
 serves the website on port 4000.
-
-
 
 This allows you to navigate to the [locally hosted][localhost site] (`http://localhost:4000`) website in your browser
 and see your new blog.
@@ -148,7 +148,7 @@ get it like you want it.
 
 ### Basic Customization
 
-![Lime Potato](img_10.png){img-left}
+<Media src="img_10.png" alt="Wafer Sun" side="left" >
 
 Towards this end, basic customization of your [Jekyll][Jekyll] blog starts with modifying 
 the configuration file (`_config.yml`) and there is a bit of [documentation][Jekyll Configuration] on 
@@ -173,7 +173,9 @@ and give a description for open graph and SEO purposes.
 
 I left the base URL (`baseurl`) empty since sub-paths are not used in my case, and the URL (`url`) was set to my domain.
 
-![Lime Chicken](img_11.png){img-right}
+</Media>
+
+<Media src="img_11.png" alt="Wafer Sun" side="right" >
 
 **Note: I commented out the Twitter (Now X) and GitHub usernames since I don't want to include either in my SEO data.**
 
@@ -188,27 +190,27 @@ output will matter.
 When you are working locally via the builder server (`bundle exec jekyll serve`) command, the URL is
 compiled as a locally hosted value.
 
-![Local Host SEO](img_8.png){img-left-long}
+![Local Host SEO](img_8.png)
 
 While, when you are building the site for deployment, the URL is compiled based 
 on the domain provided in the configuration file.
 
-![Build SEO](img_9.png){img-left-long}
+![Build SEO](img_9.png)
 
-<div class="clear-both"></div>
+</Media>
 
 So while most of the time you won't notice this; However, if you try and paste your URL into most social media platforms,
 like Discord, you will see that the site images fail to load on the preview.
 
-![Lime Dog](img_14.png){img-right}
+<Media src="img_14.png" alt="Lime Dog" side="left" >
 
-![Discord Fail To Load](img_12.png){img-left-long}
+![Discord Fail To Load](img_12.png){class="img-left"}
 
 But if you compile the site correctly, the images will load correctly.
 
-![Discord Good Post](img_13.png){img-left-long}
-
 **Note: it's good practice to inspect your HTML output and look for any discrepancies like this.** 
+
+![Discord Good Post](img_13.png){class="img-right"}
 
 The theme (`theme`) parameter is set to the default [Jekyll][Jekyll] theme of minima.
 
@@ -227,10 +229,12 @@ and it will tell you where the minima source code is installed locally on your s
 
 <div class="clear-both"></div>
 
+</Media>
+
 ---
 ### Destination And Excerpt Customizations
 
-![Lime Fish](img_20.png){img-left}
+<Media src="img_20.png" alt="Lime Fish" side="left" >
 
 In addition to the basic configuration file (`_config.yml`) changes above, I wanted to make 
 the compiled output be placed in my distribution (`dist`) directory and I achieved this by adding the following 
@@ -242,8 +246,6 @@ destination: ../../distro
 
 The destination parameter tells [Jekyll][Jekyll] where to place the compiled output (in my case) relative to 
 where the (`bundle exec jekyll serve`) command was run.
-
-![Lime Bird](img_22.png){img-right}
 
 I also wanted a nice way to control what information was considered to be an excerpt when [Jekyll][Jekyll] parsed my
 blog posts (the default is double newlines, and not ideal).
@@ -257,21 +259,27 @@ excerpt_separator: "<!--more-->"
 which provides a nice way to control where a post-excerpt ends and the blog content begins. 
 
 This is useful when you want to control what information is shown on the home page listing of your blog posts.
+</Media>
 
-[break]
+<Media src="img_22.png" alt="Lime Fish" side="right" >
+
 
 For example, if the Markdown content of a blog post looks like this:
 
 
-![Blog Markdown](img_15.png){img-left-long}
+![Blog Markdown](img_15.png)
 
 Then the excerpt separator results in the home page rendering:
 
-![Home Page Post](img_18.png){img-left-long}
+![Home Page Post](img_18.png)
 
 While the blog post-content will be rendered as:
 
-![Blog Post Example](img_19.png){img-left-long}
+</Media>
+
+<Media src="img_26.png" alt="Lime Fish" side="left" >
+
+![Blog Post Example](img_19.png)
 
 **Note: Some other benefits of the excerpt separator are that it allows you to control what information is shown
 in RSS feeds or metadata output files used for local searches.**
@@ -283,8 +291,8 @@ But effectively, you can leverage local [Ruby][Ruby] plugins,
 and a client search platform like [Lunr][Lunr]
 to add a search capability to your blog by loading your excerpt information from an autogenerated file.
 
-![Lime Cat](img_26.png){img-right}
 
+</Media>
 ---
 
 <div class="clear-both"></div>

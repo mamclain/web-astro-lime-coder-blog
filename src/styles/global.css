@@ -54,7 +54,7 @@
 
 @layer components {
     .img-left  { @apply float-left inline-block mr-4 mb-2 max-w-[60%] rounded-lg border border-white/10; }
-    .img-right { @apply float-right inline-block ml-4 mb-2 max-w-[60%] rounded-lg border border-white/10; }
+    .img-right { @apply float-right inline-block ml-4 mb-2 max-w-[60%] rounded-lg border border-white/10 ; }
     .img-left-long  { @apply float-left inline-block mr-4 mb-2 max-w-[65%] rounded-lg border border-white/10; }
     .img-right-long { @apply float-right inline-block ml-4 mb-2 max-w-[65%] rounded-lg border border-white/10; }
     .img-left-full  { @apply float-left inline-block mr-4 mb-2 max-w-[100%] rounded-lg border border-white/10; }
