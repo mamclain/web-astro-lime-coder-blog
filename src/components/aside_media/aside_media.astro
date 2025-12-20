@@ -5,6 +5,8 @@ const {
     src,
     alt = "",
     side = "right", // "right" | "left"
+    img_x_offset = "center",
+    img_y_offset = "center",
     width = "clamp(14rem, 24vw, 22rem)",
     type = "img",   // "img" | "video"
     caption
@@ -12,23 +14,8 @@ const {
 ---
 
 <div class:list={['not-prose','media-container', side === 'left' ? 'media-left' : 'media-right']}>
-    <img src={src} alt={alt} class="media-img" />
+    <img src={src} alt={alt} class="media-img" style={`--obj-x: ${img_x_offset}; --obj-y: ${img_y_offset};`}/>
     <div class="media-content">
-        <slot /> <!-- Renders the children (text content) -->
+        <slot />
     </div>
 </div>
-
-<!--<div class={`aside-wrap ${side === "left" ? "aside-left" : "aside-right"}`} style={`&#45;&#45;media-col:${width};`}>-->
-<!--    <figure class="aside-figure">-->
-<!--        {type === "img" ? (-->
-<!--                <img src={src} alt={alt} loading="lazy" decoding="async" />-->
-<!--        ) : (-->
-<!--                <video src={src} controls playsinline muted />-->
-<!--        )}-->
-<!--        {caption && <figcaption>{caption}</figcaption>}-->
-<!--    </figure>-->
-
-<!--    <div class="aside-content">-->
-<!--        <slot />-->
-<!--    </div>-->
-<!--</div>-->
